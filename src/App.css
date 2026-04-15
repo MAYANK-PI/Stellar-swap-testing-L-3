@@ -1,0 +1,53 @@
+.sidebar {
+  width: 120px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: linear-gradient(180deg, #020617, #0f172a);
+  padding: 30px 20px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.logo {
+  font-size: 22px;
+  color: white;
+  margin-bottom: 40px;
+}
+
+.menu-item {
+  display: block;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.menu-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.menu-item.active {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: white;
+}
+
+
+.app-layout {
+  display: flex;
+}
+
+/* Sidebar width = 230px */
+.page-content {
+  margin-left: 230px;   /* push content right */
+  padding: 40px;
+  width: calc(100% - 230px);
+}
+
+/* Optional: remove center alignment from old container */
+.center-container {
+  max-width: none;
+  margin: 0;
+}
