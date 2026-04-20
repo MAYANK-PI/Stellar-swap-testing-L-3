@@ -1,0 +1,7 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   F:\stellar-swap\contract\Cargo.toml
+workspace: F:\stellar-swap\Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   F:\stellar-swap\helper_contract\Cargo.toml
+workspace: F:\stellar-swap\Cargo.toml
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.94s

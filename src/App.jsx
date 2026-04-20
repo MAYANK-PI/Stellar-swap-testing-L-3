@@ -12,20 +12,30 @@ import SwapPages from "./pages/SwapPages";
 import { startEventListener } from "./eventListener";
 import { CONTRACT_ID } from "./contractClient";
 
+// ✅ import cache
+import { loadCache } from "./utilis/cache";
+
 import "./App.css";
 
 export default function App() {
 
   const [wallet, setWallet] = useState(null);
 
-  // ✅ Transaction history must be array
+  // ✅ Transaction history state (global)
   const [txList, setTxList] = useState([]);
 
   const [events, setEvents] = useState([]);
 
+  // ✅ LEVEL-3: Restore tx history from cache on app load
+  useEffect(() => {
+    const cache = loadCache();
+    if (cache?.txHistory) {
+      setTxList(cache.txHistory);
+    }
+  }, []);
+
   // ✅ Start contract event listener
   useEffect(() => {
-
     if (!CONTRACT_ID) return;
 
     const stop = startEventListener((evt) =>
@@ -33,18 +43,14 @@ export default function App() {
     );
 
     return stop;
-
   }, []);
 
   return (
     <BrowserRouter>
-
       <div className="app-layout">
-
         <Sidebar />
 
         <div className="page-content">
-
           <Routes>
 
             <Route
@@ -63,7 +69,7 @@ export default function App() {
               element={
                 <SwapPages
                   wallet={wallet}
-                  setTxState={setTxList}   // ✅ important fix
+                  setTxState={setTxList}
                 />
               }
             />
@@ -82,17 +88,14 @@ export default function App() {
               path="/status"
               element={
                 <StatusPage
-                  txList={txList}   // ✅ important fix
+                  txList={txList}
                 />
               }
             />
 
           </Routes>
-
         </div>
-
       </div>
-
     </BrowserRouter>
   );
 }

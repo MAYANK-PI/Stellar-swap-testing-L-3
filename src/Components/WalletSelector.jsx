@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   connectFreighter,
   connectAlbedo,
-} from "../walletKit";
+} from "../WalletIntegration";
 
 export default function WalletSelector({ wallet, onConnect }) {
   const [loading, setLoading] = useState(false);

@@ -1,0 +1,12 @@
+[workspace]
+members = ["contract", "helper_contract"]
+resolver = "2"
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true

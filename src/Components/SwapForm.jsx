@@ -1,133 +1,150 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { buildSwapTx, submitTx, pollTxStatus } from "../contractClient";
-import { signTransaction } from "../walletKit";
+import { signTransaction } from "../WalletIntegration";
+import { loadCache, saveCache } from "../utilis/cache";
 
 export default function SwapForm({ wallet, setTxState }) {
-
   const [amountIn, setAmountIn] = useState("");
   const [minOut, setMinOut] = useState("");
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("");
 
+  // =========================
+  // RESTORE CACHE
+  // =========================
+  useEffect(() => {
+    const cache = loadCache();
+    if (cache) {
+      setAmountIn(cache.amountIn || "");
+      setMinOut(cache.minOut || "");
 
+      if (cache.txHistory) {
+        setTxState(cache.txHistory);
+      }
+    }
+  }, [setTxState]);
+
+  // =========================
+  // SAVE INPUT CACHE
+  // =========================
+  useEffect(() => {
+    const cache = loadCache() || {};
+
+    saveCache({
+      ...cache,
+      amountIn,
+      minOut,
+    });
+  }, [amountIn, minOut]);
+
+  // =========================
+  // TX HISTORY HANDLER
+  // =========================
+  function pushTx(update) {
+    setTxState((prev) => {
+      const updated = [update, ...(prev || [])];
+
+      const cache = loadCache() || {};
+      saveCache({
+        ...cache,
+        txHistory: updated,
+        amountIn,
+        minOut,
+      });
+
+      return updated;
+    });
+  }
+
+  // =========================
+  // HANDLE SWAP
+  // =========================
   async function handleSwap() {
-
-    // ❌ Wallet not connected
     if (!wallet) {
-      setTxState(prev => [
-        {
-          status: "Failed ❌",
-          hash: null,
-          error: "Wallet not connected",
-          time: new Date().toLocaleTimeString(),
-        },
-        ...(prev || []),
-      ]);
+      pushTx({
+        status: "Failed ❌",
+        hash: null,
+        error: "Wallet not connected",
+        time: new Date().toLocaleTimeString(),
+      });
       return;
     }
 
     setLoading(true);
+    setStatus("Waiting for wallet approval…");
 
     try {
+      // 1️⃣ Pending state
+      pushTx({
+        status: "Pending ⏳",
+        hash: null,
+        error: null,
+        time: new Date().toLocaleTimeString(),
+      });
 
-      // ⏳ Show pending immediately
-      setTxState(prev => [
-        {
-          status: "Pending ⏳",
-          hash: null,
-          error: null,
-          time: new Date().toLocaleTimeString(),
-        },
-        ...(prev || []),
-      ]);
-
-
-      // 1️⃣ Build transaction
+      // 2️⃣ Build transaction
       const tx = await buildSwapTx(
         wallet.address,
         parseFloat(amountIn),
         parseFloat(minOut)
       );
 
+      // 3️⃣ Sign transaction
+      setStatus("Please approve the transaction in your wallet…");
 
-      // 2️⃣ Sign transaction
       const signedXdr = await signTransaction(
         tx.toXDR(),
         wallet.wallet
       );
 
+      // 4️⃣ Submit transaction
+      setStatus("Submitting transaction to Stellar network…");
 
-      // 3️⃣ Submit transaction
       const hash = await submitTx(signedXdr);
 
+      pushTx({
+        status: "Pending ⏳",
+        hash,
+        error: null,
+        time: new Date().toLocaleTimeString(),
+      });
 
-      // ⏳ Update pending with hash
-      setTxState(prev => [
-        {
-          status: "Pending ⏳",
+      // 5️⃣ Poll transaction status
+      setStatus("Waiting for on-chain confirmation…");
+
+      const finalStatus = await pollTxStatus(hash);
+
+      if (finalStatus === "SUCCESS") {
+        setStatus("Swap successful ✅");
+
+        pushTx({
+          status: "Success ✅",
           hash,
           error: null,
           time: new Date().toLocaleTimeString(),
-        },
-        ...(prev || []),
-      ]);
+        });
+      } else if (finalStatus === "FAILED") {
+        setStatus("Transaction failed on-chain ❌");
 
+        pushTx({
+          status: "Failed ❌",
+          hash,
+          error: "Transaction failed on-chain",
+          time: new Date().toLocaleTimeString(),
+        });
+      } else {
+        setStatus("Transaction confirmation timeout ⏱️");
 
-      // 4️⃣ Poll transaction result
-      const finalStatus = await pollTxStatus(hash);
-
-
-      // ✅ SUCCESS
-      if (finalStatus === "SUCCESS") {
-
-        setTxState(prev => [
-          {
-            status: "Success ✅",
-            hash,
-            error: null,
-            time: new Date().toLocaleTimeString(),
-          },
-          ...(prev || []),
-        ]);
-
+        pushTx({
+          status: "Timeout ⏱️",
+          hash,
+          error: "Transaction confirmation timeout",
+          time: new Date().toLocaleTimeString(),
+        });
       }
-
-      // ❌ FAILED
-      else if (finalStatus === "FAILED") {
-
-        setTxState(prev => [
-          {
-            status: "Failed ❌",
-            hash,
-            error: "Transaction failed on-chain",
-            time: new Date().toLocaleTimeString(),
-          },
-          ...(prev || []),
-        ]);
-
-      }
-
-      // ⏱️ TIMEOUT
-      else {
-
-        setTxState(prev => [
-          {
-            status: "Timeout ⏱️",
-            hash,
-            error: "Transaction confirmation timeout",
-            time: new Date().toLocaleTimeString(),
-          },
-          ...(prev || []),
-        ]);
-
-      }
-
-    }
-
-    catch (err) {
-
+    } catch (err) {
       let message = err?.message || "Transaction error";
 
-      // ❌ Wallet rejected signing
       if (message.toLowerCase().includes("rejected")) {
         message = "Transaction rejected by wallet";
       }
@@ -136,36 +153,21 @@ export default function SwapForm({ wallet, setTxState }) {
         message = "Transaction cancelled by user";
       }
 
-      // ❌ Insufficient balance already handled by contract
-      setTxState(prev => [
-        {
-          status: "Failed ❌",
-          hash: null,
-          error: message,
-          time: new Date().toLocaleTimeString(),
-        },
-        ...(prev || []),
-      ]);
+      setStatus("Transaction cancelled or failed ❌");
 
-    }
-
-    finally {
+      pushTx({
+        status: "Failed ❌",
+        hash: null,
+        error: message,
+        time: new Date().toLocaleTimeString(),
+      });
+    } finally {
       setLoading(false);
     }
   }
 
-
   return (
-    <div
-      style={{
-        background: "#f9f9f9",
-        border: "1px solid #e5e5e5",
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-      }}
-    >
-
+    <div style={box}>
       <p style={{ fontSize: 14, marginBottom: 12 }}>
         Swap XLM → Token
       </p>
@@ -186,28 +188,30 @@ export default function SwapForm({ wallet, setTxState }) {
         style={{ ...input, marginTop: 8 }}
       />
 
+      {status && <div style={statusBox}>{status}</div>}
+
       <button
         onClick={handleSwap}
         disabled={loading || !amountIn || !minOut}
-        style={{
-          marginTop: 12,
-          padding: "10px 24px",
-          background: "#6d28d9",
-          color: "#fff",
-          border: "none",
-          borderRadius: 8,
-          cursor: "pointer",
-          fontSize: 14,
-          width: "100%",
-        }}
+        style={button}
       >
         {loading ? "Swapping…" : "Swap"}
       </button>
-
     </div>
   );
 }
 
+// =========================
+// STYLES
+// =========================
+
+const box = {
+  background: "#f9f9f9",
+  border: "1px solid #e5e5e5",
+  borderRadius: 12,
+  padding: 16,
+  marginBottom: 16,
+};
 
 const input = {
   width: "100%",
@@ -216,4 +220,24 @@ const input = {
   border: "1px solid #d1d5db",
   fontSize: 14,
   boxSizing: "border-box",
+};
+
+const statusBox = {
+  marginTop: 10,
+  padding: 8,
+  background: "#eef2ff",
+  borderRadius: 8,
+  fontSize: 13,
+};
+
+const button = {
+  marginTop: 12,
+  padding: "10px 24px",
+  background: "#6d28d9",
+  color: "#fff",
+  border: "none",
+  borderRadius: 8,
+  cursor: "pointer",
+  fontSize: 14,
+  width: "100%",
 };
