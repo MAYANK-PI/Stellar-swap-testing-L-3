@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./Components/Sidebar";
 
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
@@ -47,8 +47,10 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="app-layout">
+      <div className="app-container">
+        
         <Sidebar />
+      
 
         <div className="page-content">
           <Routes>
