@@ -3,9 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://MAYANK-PI.github.io/Stellar-swap-testing-L-3",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest"
@@ -32,6 +35,7 @@
     "globals": "^17.4.0",
     "jsdom": "^29.0.2",
     "vite": "^8.0.4",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "gh-pages": "^6.1.1"
   }
 }
