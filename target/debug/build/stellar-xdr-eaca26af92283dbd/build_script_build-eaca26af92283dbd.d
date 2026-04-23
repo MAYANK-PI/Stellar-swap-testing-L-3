@@ -1,5 +1,0 @@
-F:\stellar-swap\target\debug\build\stellar-xdr-eaca26af92283dbd\build_script_build-eaca26af92283dbd.d: C:\Users\techn\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\stellar-xdr-21.2.0\build.rs
-
-F:\stellar-swap\target\debug\build\stellar-xdr-eaca26af92283dbd\build_script_build-eaca26af92283dbd.exe: C:\Users\techn\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\stellar-xdr-21.2.0\build.rs
-
-C:\Users\techn\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\stellar-xdr-21.2.0\build.rs:
