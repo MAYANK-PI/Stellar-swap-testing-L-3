@@ -10,6 +10,15 @@ A fully functional Mini-dApp built on the **Stellar** network demonstrating Leve
 
 This project satisfies all Level-3 submission requirements.
 
+🔗 Smart Contract Details
+
+Network: Stellar Testnet
+Contract Address:
+
+CDR24SX4QHNHQXD7XECHLXWBGQVAYXV4KRKZO5Q4M24DGNLLPBYP7YQ3
+
+
+
 ---
 
 ## 🔴 Live Demo
