@@ -50,6 +50,7 @@ The video demonstrates:
 ## 📦 Public GitHub Repository
 
 **Repository Link:**
+its one minute demo video link there
 👉 link--https://www.youtube.com/watch?v=mU0zSfrkzt8
 
 ---
