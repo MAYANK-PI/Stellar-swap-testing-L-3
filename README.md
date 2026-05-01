@@ -50,7 +50,7 @@ The video demonstrates:
 ## 📦 Public GitHub Repository
 
 **Repository Link:**
-👉 in video folder there is shwowing a raw file do download and see full video .
+👉 link--https://www.youtube.com/watch?v=mU0zSfrkzt8
 
 ---
 
